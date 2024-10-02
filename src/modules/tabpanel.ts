@@ -302,13 +302,13 @@ async function buildSyncButton(body: HTMLDivElement) {
 		const mode = UpdateMode[radio.getAttribute("value")! as keyof typeof UpdateMode]
 		const reader = await ztoolkit.Reader.getReader()
 		if (!reader) return;
-		const annotationTexts = reader.annotationItemIDs.map((id) => Zotero.Items.get(id))
-			.filter(item => selector.getValue(item.annotationColor))
-			.map(item => item.annotationText)
+		const annotationTexts = reader.annotationItemIDs.map((id: number) => Zotero.Items.get(id))
+			.filter((item: Zotero.Item) => selector.getValue(item.annotationColor))
+			.map((item: Zotero.Item) => item.annotationText)
 		// 没有过滤时选择所有注释
 		if (annotationTexts.length == 0) {
-			reader.annotationItemIDs.map((id) => Zotero.Items.get(id))
-				.forEach(item => annotationTexts.push(item.annotationText))
+			reader.annotationItemIDs.map((id: number) => Zotero.Items.get(id))
+				.forEach((item: Zotero.Item) => annotationTexts.push(item.annotationText))
 		}
 		notepads.getTarget()?.update(mode, annotationTexts)
 	})
