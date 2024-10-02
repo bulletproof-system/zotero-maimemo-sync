@@ -1,4 +1,3 @@
-import axios from "axios";
 import { getPref } from "../utils/prefs";
 import { MaiMemo } from "../../typings/maimemo";
 import error from "../modules/error";
@@ -13,23 +12,6 @@ interface CustomResponse<T = any> {
 	}[];
 	success: boolean;
 }
-
-declare module 'axios' {
-	export interface AxiosResponse<T = any> extends Promise<CustomResponse<T>> { }
-}
-
-export const api = axios.create({
-	baseURL: "https://open.maimemo.com/open/api/v1",
-	headers: {
-		Accept: "application/json"
-	}
-})
-
-api.interceptors.response.use((res) => {
-	return res;
-}, (err) => {
-	return Promise.reject(err);
-})
 
 export function getNotepadsApi(): Promise<MaiMemo.BriefNotepad[]>;
 export function getNotepadsApi(limit: number, offset: number): Promise<MaiMemo.BriefNotepad[]>;
