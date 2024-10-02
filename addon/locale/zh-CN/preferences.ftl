@@ -1,5 +1,6 @@
-pref-title = 插件模板设置示例
-pref-enable =
-    .label = 开启
-pref-input = 输入
-pref-help = { $name } Build { $version } { $time }
+pref-service = 服务
+pref-service-token-label = Token
+pref-service-token-input = 
+    .placeholder = 墨墨背单词 Token
+pref-about = 关于
+pref-help = { $name } 版本 { $version } Build { $time }

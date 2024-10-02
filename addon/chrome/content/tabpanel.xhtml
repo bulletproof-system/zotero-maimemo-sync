@@ -1,0 +1,48 @@
+<linkset>
+	<html:link rel="localization" href="__addonRef__-tabpanel.ftl" />
+	<html:link type="text/css"  rel="stylesheet" href="chrome://__addonRef__/content/tabpanel.css" />
+</linkset>
+<vbox
+	class="maimemo-sync-plugin-tabpanel"
+>
+	<hbox align="center">
+		<html:div id="zotero-tabpanel-__addonRef__-error-list" class="error-list">
+
+		</html:div>
+	</hbox>
+	<hbox align="center">
+		<label 
+			data-l10n-id="tabpanel-notepads-select"
+			for="zotero-tabpanel-__addonRef__-notepads-select"
+		></label>
+		<menulist native="true" id="zotero-tabpanel-__addonRef__-notepads-list">
+			<menupopup>
+			  <!-- <menuitem label="${lang.name}" value="${lang.code}"> </menuitem> -->
+			   <!-- <menuitem label="默认" value="default"></menuitem> -->
+			</menupopup>
+		</menulist>
+		<button
+			data-l10n-id="tabpanel-refresh"
+			id="zotero-tabpanel-__addonRef__-refresh-button"
+		></button>
+	</hbox>
+	<hbox align="center">
+		<label data-l10n-id="tabpanel-sync-mode-label"></label>
+		<radiogroup id="zotero-tabpanel-__addonRef__-sync-mode">
+			<radio data-l10n-id="tabpanel-sync-mode-append" value="Append"/>
+			<radio data-l10n-id="tabpanel-sync-mode-overwrite" value="Overwrite"/>
+		</radiogroup>
+	</hbox>
+	<hbox align="center">
+		<label id="zotero-tabpanel-__addonRef__-color-filter-label" data-l10n-id="tabpanel-color-filter-label"></label>
+		<html:div id="zotero-tabpanel-__addonRef__-color-filter" class="color-filter">
+
+		</html:div>
+	</hbox>
+	<hbox>
+		<button
+			data-l10n-id="tabpanel-sync-button"
+			id="zotero-tabpanel-__addonRef__-sync-button"
+		></button>
+	</hbox>
+</vbox>
