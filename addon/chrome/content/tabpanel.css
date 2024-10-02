@@ -1,0 +1,90 @@
+.maimemo-sync-plugin-tabpanel .error-list {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+}
+
+.maimemo-sync-plugin-tabpanel .error-list .error {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: left;
+	margin: 5px 0px;
+	border-radius: 3px;
+	background-color: rgba(245, 108, 108, 0.1);
+	padding: 2px;
+}
+
+.maimemo-sync-plugin-tabpanel .error-list .error .fade-in {
+	animation: fadeIn 0.5s forwards;
+	/* 添加渐入动画 */
+}
+
+.maimemo-sync-plugin-tabpanel .error-list .error .fade-out {
+	animation: fadeOut 0.5s forwards;
+	/* 添加渐出动画 */
+}
+
+.maimemo-sync-plugin-tabpanel .error-list .error .error-message {
+	color: #F56C6C;
+}
+
+.maimemo-sync-plugin-tabpanel radiogroup {
+	display: flex;
+	flex-direction: row;
+}
+
+.maimemo-sync-plugin-tabpanel button {
+	flex: 1;
+	justify-content: center;
+	align-items: center;
+}
+
+.maimemo-sync-plugin-tabpanel .color-filter {
+	display: flex;
+	flex-wrap: wrap
+}
+
+.maimemo-sync-plugin-tabpanel .color-filter .color-filter-button {
+	/* border: unset; */
+	padding: 2px;
+	display: flex;
+	border-radius: 3px;
+	width: 20px;
+	height: 20px;
+	background: none;
+	color: inherit;
+	margin: 0px 1px
+}
+
+.maimemo-sync-plugin-tabpanel .color-filter.all .color-filter-button svg {
+	opacity: 1;
+}
+
+.maimemo-sync-plugin-tabpanel .color-filter .color-filter-button svg {
+	opacity: 0.4;
+}
+
+/* [dir="ltr"] .maimemo-sync-plugin-tabpanel .color-filter .color-filter-button {
+	margin-left: 1px
+}
+
+[dir="rtl"] .maimemo-sync-plugin-tabpanel .color-filter .color-filter-button {
+	margin-right: 1px
+} */
+
+.maimemo-sync-plugin-tabpanel .color-filter .color-filter-button:hover {
+	background-color: var(--fill-quinary)
+}
+
+.maimemo-sync-plugin-tabpanel .color-filter .color-filter-button.selected {
+	background-color: var(--fill-secondary);
+}
+
+.maimemo-sync-plugin-tabpanel .color-filter .color-filter-button.selected svg {
+	opacity: 1;
+}
+
+.maimemo-sync-plugin-tabpanel .color-filter .color-filter-button.selected:hover {
+	opacity: 0.75;
+}

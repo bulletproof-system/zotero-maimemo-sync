@@ -1,0 +1,13 @@
+tabpanel-notepads-select = 选择云词本
+tabpanel-refresh = 刷新列表
+tabpanel-sync-mode-label = 同步模式
+tabpanel-sync-mode-append =
+    .label = 追加
+tabpanel-sync-mode-overwrite =
+    .label = 覆盖
+tabpanel-color-filter-label = 颜色过滤
+tabpanel-sync-button = 同步
+error-token = token 错误
+error-notepads-sync = 同步云词本失败
+error-notepads-load = 加载云词本失败
+error-notepads-save = 保存云词本失败
