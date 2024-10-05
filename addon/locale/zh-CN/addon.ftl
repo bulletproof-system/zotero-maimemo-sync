@@ -5,5 +5,5 @@ menupopup-label = 插件模板: 弹出菜单
 menuitem-submenulabel = 插件模板：子菜单
 menuitem-filemenulabel = 插件模板: 文件菜单
 prefs-title = 云词本同步
-prefs-table-title = 标题
-prefs-table-detail = 详情
+tabpanel-export = 导出
+    .txt = 文本文件

@@ -2,10 +2,11 @@ import { watch } from "vue";
 import { config } from "../../package.json";
 import { getNotepadsApi } from "../api";
 import { getLocaleID, getString } from "../utils/locale";
-import { notepads, UpdateMode } from "./notepads";
+import { notepads, UpdateMode as SyncMode } from "./notepads";
 import { TagElementProps } from "zotero-plugin-toolkit/dist/tools/ui";
 import { listeners } from "process";
 import error from "./error";
+import { getPref, setPref } from "../utils/prefs";
 
 export async function registerTabpanel() {
 	const tabpanel = await (await fetch(`chrome://${config.addonRef}/content/tabpanel.xhtml`)).text()
@@ -38,9 +39,11 @@ export async function registerTabpanelScripts(body: HTMLDivElement) {
 	res.push(await buildErrorlist(body));
 	res.push(await buildNotepadList(body));
 	res.push(await buildRefreshButton(body));
-	res.push(await buildModeRadio(body));
+	res.push(await buildSyncModeRadio(body));
+	res.push(await buildSplitModeRadio(body));
 	res.push(await buildColorFilter(body));
 	res.push(await buildSyncButton(body));
+	res.push(await buildExportButton(body));
 	return res;
 }
 
@@ -184,8 +187,50 @@ async function buildRefreshButton(body: HTMLDivElement) {
 	return async () => { }
 }
 
-async function buildModeRadio(body: HTMLDivElement) {
+async function buildSyncModeRadio(body: HTMLDivElement) {
 	const radio = body.querySelector('#' + getId("sync-mode"))! as XULElement
+	const mode = getPref("sync-mode") as string
+	radio.setAttribute("value", mode)
+	radio.childNodes.forEach(node => {
+		const e = node as XULElement
+		if (e.getAttribute("value") === mode) {
+			e.setAttribute("selected", "true")
+			const child = e.firstChild! as XULElement
+			child.setAttribute("selected", "true")
+		} else {
+			e.removeAttribute("selected")
+			const child = e.firstChild! as XULElement
+			child.removeAttribute("selected")
+		}
+	})
+	radio.addEventListener("command", e => {
+		const mode = (e.target as XULElement).getAttribute("value") as string
+		setPref("sync-mode", mode)
+	})
+	return async () => { }
+}
+
+async function buildSplitModeRadio(body: HTMLDivElement) {
+	const radio = body.querySelector('#' + getId("split-mode"))! as XULElement
+	const mode = getPref("split-mode") as string
+	ztoolkit.log("split-mode", mode)
+	radio.setAttribute("value", mode)
+	radio.childNodes.forEach(node => {
+		const e = node as XULElement
+		if (e.getAttribute("value") === mode) {
+			e.setAttribute("selected", "true")
+			const child = e.firstChild! as XULElement
+			child.setAttribute("selected", "true")
+		} else {
+			e.removeAttribute("selected")
+			const child = e.firstChild! as XULElement
+			child.removeAttribute("selected")
+		}
+	})
+	radio.addEventListener("command", e => {
+		const mode = (e.target as XULElement).getAttribute("value") as string
+		setPref("split-mode", mode)
+	})
 	return async () => { }
 }
 
@@ -294,23 +339,65 @@ async function buildColorFilter(body: HTMLDivElement) {
 async function buildSyncButton(body: HTMLDivElement) {
 	const radio = body.querySelector('#' + getId("sync-mode"))! as XULElement
 	const button = body.querySelector('#' + getId("sync-button"))! as HTMLButtonElement
+	button.addEventListener("click", async () => {
+		const mode = SyncMode[radio.getAttribute("value")! as keyof typeof SyncMode]
+		notepads.getTarget()?.update(mode, await getText(body))
+	})
+	return async () => { }
+}
+
+async function buildExportButton(body: HTMLDivElement) {
+	const button = body.querySelector('#' + getId("export-button"))! as HTMLButtonElement
+	button.addEventListener("click", async () => {
+		const res = (await new ztoolkit.FilePicker(
+			getString("tabpanel-export"),
+			"save",
+			[[getString("tabpanel-export", "txt"), "*.txt"]],
+			"notepad.txt",
+		).open())
+		if (res !== false) {
+			const text = await getText(body)
+			const nsIFile = Zotero.File.pathToFile(res)
+			Zotero.File.putContents(nsIFile, text.join("\n"))
+		}
+	})
+	return async () => { }
+}
+
+enum SplitMode {
+	Annotation = "Annotation",
+	Word = "Word",
+}
+async function getText(body: HTMLDivElement) {
+	const radio = body.querySelector('#' + getId("split-mode"))! as XULElement
 	const selector = new ztoolkit.LargePrefObject(
 		`${config.prefsPrefix}.color-filter-key`,
 		`${config.prefsPrefix}.color-filter-value`,
 	)
-	button.addEventListener("click", async () => {
-		const mode = UpdateMode[radio.getAttribute("value")! as keyof typeof UpdateMode]
-		const reader = await ztoolkit.Reader.getReader()
-		if (!reader) return;
-		const annotationTexts = reader.annotationItemIDs.map((id: number) => Zotero.Items.get(id))
-			.filter((item: Zotero.Item) => selector.getValue(item.annotationColor))
-			.map((item: Zotero.Item) => item.annotationText)
-		// 没有过滤时选择所有注释
-		if (annotationTexts.length == 0) {
-			reader.annotationItemIDs.map((id: number) => Zotero.Items.get(id))
-				.forEach((item: Zotero.Item) => annotationTexts.push(item.annotationText))
+	const mode = SplitMode[radio.getAttribute("value")! as keyof typeof SplitMode]
+	const reader = await ztoolkit.Reader.getReader()
+	if (!reader) return [];
+	const annotationTexts = reader.annotationItemIDs.map((id: number) => Zotero.Items.get(id))
+		.filter((item: Zotero.Item) => selector.getValue(item.annotationColor))
+		.map((item: Zotero.Item) => item.annotationText)
+	// 没有过滤时选择所有注释
+	if (annotationTexts.length == 0) {
+		reader.annotationItemIDs.map((id: number) => Zotero.Items.get(id))
+			.forEach((item: Zotero.Item) => annotationTexts.push(item.annotationText))
+	}
+	const text: string[] = []
+	annotationTexts.forEach((annotation) => {
+		switch (mode) {
+			case SplitMode.Annotation:
+				text.push(annotation);
+				break;
+			case SplitMode.Word:
+				text.push(...annotation.split(" "));
+				break;
+			default:
+				ztoolkit.log("Unknown split mode: " + mode);
+				return [];
 		}
-		notepads.getTarget()?.update(mode, annotationTexts)
-	})
-	return async () => { }
+	}, []);
+	return text;
 }
