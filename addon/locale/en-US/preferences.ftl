@@ -1,9 +1,6 @@
-pref-title = Addon Template Example
-pref-service = Service 
-pref-service-token = Token
-pref-enable =
-    .label = Enable
-pref-input = Input
-pref-help = 
-    .value = { $name } Version { $version } Build { $time }
+pref-service = Serivce
+pref-service-token-label = Token
+pref-service-token-input = 
+    .placeholder = Maimemo Token
 pref-about = About
+pref-help = { $name } Version { $version } Build { $time }
