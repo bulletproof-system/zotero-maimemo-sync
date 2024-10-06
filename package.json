@@ -1,6 +1,6 @@
 {
   "name": "zotero-maimemo-sync",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A Zotero plugin that syncs highlighted words from Zotero notes to Maimemo, enabling seamless vocabulary learning.",
   "config": {
     "addonName": "Zotero Maimemo Sync",
