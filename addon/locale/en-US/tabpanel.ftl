@@ -17,3 +17,4 @@ error-token = token error
 error-notepads-sync = Sync notepads error
 error-notepads-load = Load notepads error
 error-notepads-save = Save notepads error
+info-notepads-update = Update notepads success

@@ -1,10 +1,44 @@
-.maimemo-sync-plugin-tabpanel .error-list {
+.maimemo-sync-plugin-tabpanel .msg-list {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
 }
 
-.maimemo-sync-plugin-tabpanel .error-list .error {
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-100%);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeOut {
+	from {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	to {
+		opacity: 0;
+		transform: translateY(-100%);
+	}
+}
+
+.maimemo-sync-plugin-tabpanel .msg-list .fade-in {
+	animation: fadeIn 0.5s forwards;
+	/* 添加渐入动画 */
+}
+
+.maimemo-sync-plugin-tabpanel .msg-list .fade-out {
+	animation: fadeOut 0.5s forwards;
+	/* 添加渐出动画 */
+}
+
+.maimemo-sync-plugin-tabpanel .msg-list .error {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -15,18 +49,23 @@
 	padding: 2px;
 }
 
-.maimemo-sync-plugin-tabpanel .error-list .error .fade-in {
-	animation: fadeIn 0.5s forwards;
-	/* 添加渐入动画 */
+.maimemo-sync-plugin-tabpanel .msg-list .error .message {
+	color: rgb(245, 108, 108);
 }
 
-.maimemo-sync-plugin-tabpanel .error-list .error .fade-out {
-	animation: fadeOut 0.5s forwards;
-	/* 添加渐出动画 */
+.maimemo-sync-plugin-tabpanel .msg-list .info {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: left;
+	margin: 5px 0px;
+	border-radius: 3px;
+	background-color: rgba(76, 175, 80, 0.1);
+	padding: 2px;
 }
 
-.maimemo-sync-plugin-tabpanel .error-list .error .error-message {
-	color: #F56C6C;
+.maimemo-sync-plugin-tabpanel .msg-list .info .message {
+	color: rgb(76, 175, 80);
 }
 
 .maimemo-sync-plugin-tabpanel radiogroup {

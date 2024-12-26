@@ -17,3 +17,4 @@ error-token = token 错误
 error-notepads-sync = 同步云词本失败
 error-notepads-load = 加载云词本失败
 error-notepads-save = 保存云词本失败
+info-notepads-update = 更新云词本成功

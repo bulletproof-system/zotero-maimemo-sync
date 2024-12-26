@@ -5,7 +5,7 @@ import { getLocaleID, getString } from "../utils/locale";
 import { notepads, UpdateMode as SyncMode } from "./notepads";
 import { TagElementProps } from "zotero-plugin-toolkit/dist/tools/ui";
 import { listeners } from "process";
-import error from "./error";
+import log from "./log";
 import { getPref, setPref } from "../utils/prefs";
 
 export async function registerTabpanel() {
@@ -53,8 +53,8 @@ function getId(id: string) {
 }
 
 async function buildErrorlist(body: HTMLDivElement) {
-	const errorlist = body.querySelector('#' + getId("error-list"))! as XULMenuElement
-	function buildErrorItem(e: string) {
+	const errorlist = body.querySelector('#' + getId("msg-list"))! as XULMenuElement
+	function buildErrorItem(msg: string) {
 		const text = ztoolkit.UI.appendElement({
 			tag: "div",
 			namespace: "html",
@@ -84,8 +84,8 @@ async function buildErrorlist(body: HTMLDivElement) {
 					tag: "span",
 					namespace: "html",
 					attributes: {
-						"class": "error-message",
-						"data-l10n-id": e,
+						"class": "message",
+						"data-l10n-id": msg,
 					},
 				},
 				{
@@ -114,7 +114,11 @@ async function buildErrorlist(body: HTMLDivElement) {
 					}],
 					listeners: [{
 						type: "click",
-						listener: () => text.remove()
+						listener: () => {
+							text.classList.remove("fade-in")
+							text.classList.add("fade-out")
+							setTimeout(() => text.remove(), 500)
+						}
 					}]
 				}
 			]
@@ -125,9 +129,86 @@ async function buildErrorlist(body: HTMLDivElement) {
 			setTimeout(() => text.remove(), 500)
 		}, 5000)
 	}
-	error.on('throw', buildErrorItem)
+	function buildInfoItem(msg: string) {
+		const text = ztoolkit.UI.appendElement({
+			tag: "div",
+			namespace: "html",
+			attributes: {
+				"class": "info fade-in",
+			},
+			children: [
+				{
+					tag: "svg",
+					namespace: "svg",
+					attributes: {
+						"xmlns": "http://www.w3.org/2000/svg",
+						"width": "24",
+						"height": "24",
+						"viewBox": "0 0 24 24",
+						"fill": "#4CAF50",
+					},
+					children: [{
+						tag: "path",
+						namespace: "svg",
+						attributes: {
+							d: "M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"
+						}
+					}],
+				},
+				{
+					tag: "span",
+					namespace: "html",
+					attributes: {
+						"class": "message",
+						"data-l10n-id": msg,
+					},
+				},
+				{
+					tag: "div",
+					namespace: "html",
+					attributes: {
+						style: "flex-grow: 1"
+					}
+				},
+				{
+					tag: "svg",
+					namespace: "svg",
+					attributes: {
+						"xmlns": "http://www.w3.org/2000/svg",
+						"width": "24",
+						"height": "24",
+						"viewBox": "0 0 24 24",
+						"fill": "#F56C6C",
+					},
+					children: [{
+						tag: "path",
+						namespace: "svg",
+						attributes: {
+							d: "M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+						}
+					}],
+					listeners: [{
+						type: "click",
+						listener: () => {
+							text.classList.remove("fade-in")
+							text.classList.add("fade-out")
+							setTimeout(() => text.remove(), 500)
+						}
+					}]
+				}
+			]
+		}, errorlist) as HTMLElement
+		setTimeout(() => {
+			text.classList.remove("fade-in")
+			text.classList.add("fade-out")
+			setTimeout(() => text.remove(), 500)
+		}, 5000)
+	}
+	log.on('info', buildInfoItem)
+	log.on('error', buildErrorItem)
 	return async () => {
-		error.off('throw', buildErrorItem)
+		log.off('info', buildInfoItem)
+		log.off('error', buildErrorItem)
 	}
 }
 

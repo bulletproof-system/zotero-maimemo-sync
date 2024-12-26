@@ -4,7 +4,7 @@ import { getString } from "../utils/locale";
 import { clearPref, getPref, setPref } from "../utils/prefs";
 import { Ref, ref, watch } from "vue";
 import EventEmitter from "./eventEmitter";
-import error from "./error";
+import log from "./log";
 
 export class Notepads extends EventEmitter {
 	target: Ref<string | null> = ref(null);
@@ -40,7 +40,7 @@ export class Notepads extends EventEmitter {
 			}
 			this.emit("sync");
 		} catch (e) {
-			error.handle("error-notepads-sync")
+			log.error("error-notepads-sync")
 		}
 	}
 
@@ -76,7 +76,7 @@ export class Notepad {
 		try {
 			this.inner = await getNotepadApi(this.inner.id);
 		} catch (e) {
-			error.handle("error-notepads-load")
+			log.error("error-notepads-load")
 		}
 	}
 
@@ -84,7 +84,7 @@ export class Notepad {
 		try {
 			this.inner = await updateNotepadApi(this.inner.id, this.inner as MaiMemo.Notepad);
 		} catch (e) {
-			error.handle("error-notepads-save")
+			log.error("error-notepads-save")
 		}
 	}
 
@@ -103,6 +103,7 @@ export class Notepad {
 				return;
 		}
 		await this.save();
+		log.info("info-notepads-update")
 	}
 
 	/** 追加 */

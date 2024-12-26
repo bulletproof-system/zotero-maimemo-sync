@@ -1,6 +1,6 @@
 import { getPref } from "../utils/prefs";
 import { MaiMemo } from "../../typings/maimemo";
-import error from "../modules/error";
+import log from "../modules/log";
 import { getString } from "../utils/locale";
 
 interface CustomResponse<T = any> {
@@ -28,7 +28,7 @@ export async function getNotepadsApi(limit?: number, offset?: number) {
 			}
 		)
 		ztoolkit.log(xhr)
-		if (xhr.status === 401) error.handle("error-token")
+		if (xhr.status === 401) log.error("error-token")
 		if (xhr.status !== 200) throw new Error(xhr.statusText);
 		return JSON.parse(xhr.responseText).data.notepads;
 	} else {
@@ -56,7 +56,7 @@ export async function getNotepadApi(id: string): Promise<MaiMemo.Notepad> {
 			successCodes: false,
 		}
 	)
-	if (xhr.status === 401) error.handle(getString("error-token"))
+	if (xhr.status === 401) log.error(getString("error-token"))
 	if (xhr.status !== 200) throw new Error(xhr.statusText);
 	return JSON.parse(xhr.responseText).data.notepad;
 }
@@ -84,7 +84,7 @@ export async function updateNotepadApi(id: string, notepad: UpdatedNotepadFields
 			successCodes: false,
 		}
 	)
-	if (xhr.status === 401) error.handle(getString("error-token"))
+	if (xhr.status === 401) log.error(getString("error-token"))
 	if (xhr.status !== 201) throw new Error(xhr.statusText);
 	return JSON.parse(xhr.responseText).data.notepad;
 }
