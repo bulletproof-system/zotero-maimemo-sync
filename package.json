@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "vue": "^3.5.10",
-    "zotero-plugin-toolkit": "^4.0.2"
+    "zotero-plugin-toolkit": "^5.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
