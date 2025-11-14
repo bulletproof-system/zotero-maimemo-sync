@@ -4,7 +4,7 @@
   "description": "A Zotero plugin that syncs highlighted words from Zotero notes to Maimemo, enabling seamless vocabulary learning.",
   "config": {
     "addonName": "Zotero Maimemo Sync",
-    "addonID": "zoteromaimemosync@euclpts.com",
+    "addonID": "zoteromaimemosync@luotiantian.com",
     "addonRef": "zoteromaimemosync",
     "addonInstance": "MaimemoSync",
     "prefsPrefix": "extensions.zotero.zoteromaimemosync"
@@ -22,8 +22,8 @@
   "scripts": {
     "start": "zotero-plugin serve",
     "build": "tsc --noEmit && zotero-plugin build",
-    "lint": "prettier --write . && eslint . --fix",
     "release": "zotero-plugin release",
+    "lint": "prettier --write . && eslint . --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
     "update-deps": "npm update --save"
   },
@@ -55,6 +55,5 @@
         }
       }
     ]
-  },
-  "packageManager": "pnpm@8.15.1+sha1.8adba2d20330c02d3856e18c4eb3819d1d3ca6aa"
+  }
 }
