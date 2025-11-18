@@ -27,7 +27,7 @@ export async function getNotepadsApi(limit?: number, offset?: number) {
 				successCodes: false,
 			}
 		)
-		ztoolkit.log(xhr)
+		// ztoolkit.log(xhr)
 		if (xhr.status === 401) log.error("error-token")
 		if (xhr.status !== 200) throw new Error(xhr.statusText);
 		return JSON.parse(xhr.responseText).data.notepads;
