@@ -8,9 +8,9 @@ import { listeners } from "process";
 import log from "./log";
 import { getPref, setPref } from "../utils/prefs";
 
+let destroy: Function[] = [];
 export async function registerTabpanel() {
 	const tabpanel = await (await fetch(`chrome://${config.addonRef}/content/tabpanel.xhtml`)).text()
-	let destroy: Function[] = [];
 	Zotero.ItemPaneManager.registerSection({
 		paneID: "maimemo-sync",
 		pluginID: config.addonID,
@@ -24,10 +24,14 @@ export async function registerTabpanel() {
 		},
 		bodyXHTML: tabpanel,
 		onRender: async ({ body }) => {
+			ztoolkit.log("Register tabpanel scripts");
+			destroy.map(f => f());
 			destroy = await registerTabpanelScripts(body)
 		},
-		onDestroy: () => {
-			destroy.forEach(f => f())
+		onDestroy: async () => {
+			ztoolkit.log("Unregister tabpanel scripts");
+			destroy.map(f => f());
+			destroy = [];
 		}
 	})
 }
@@ -206,7 +210,7 @@ async function buildErrorlist(body: HTMLDivElement) {
 	}
 	log.on('info', buildInfoItem)
 	log.on('error', buildErrorItem)
-	return async () => {
+	return () => {
 		log.off('info', buildInfoItem)
 		log.off('error', buildErrorItem)
 	}
@@ -251,21 +255,26 @@ async function buildNotepadList(body: HTMLDivElement) {
 	}
 	notepads.on("sync", buildNotepadItem);
 	notepads.on("change", setActiveChild);
-	menulist.addEventListener("command", e => {
+	const handleMenulistCommand = (e: Event) => {
 		const id = (e.target as XULElement).getAttribute("value")
 		notepads.setTarget(id)
-	})
+	}
+	menulist.addEventListener("command", handleMenulistCommand)
 	await notepads.sync();
-	return async () => {
+	return () => {
 		notepads.off("sync", buildNotepadItem);
 		notepads.off("change", setActiveChild);
+		menulist.removeEventListener("command", handleMenulistCommand)
 	}
 }
 
 async function buildRefreshButton(body: HTMLDivElement) {
 	const button = body.querySelector('#' + getId("refresh-button"))! as HTMLButtonElement
-	button.addEventListener("click", () => notepads.sync())
-	return async () => { }
+	const handleRefreshClick = () => notepads.sync()
+	button.addEventListener("click", handleRefreshClick)
+	return () => {
+		button.removeEventListener("click", handleRefreshClick)
+	}
 }
 
 async function buildSyncModeRadio(body: HTMLDivElement) {
@@ -284,11 +293,14 @@ async function buildSyncModeRadio(body: HTMLDivElement) {
 			child.removeAttribute("selected")
 		}
 	})
-	radio.addEventListener("command", e => {
+	const handleSyncModeCommand = (e: Event) => {
 		const mode = (e.target as XULElement).getAttribute("value") as string
 		setPref("sync-mode", mode)
-	})
-	return async () => { }
+	}
+	radio.addEventListener("command", handleSyncModeCommand)
+	return () => {
+		radio.removeEventListener("command", handleSyncModeCommand)
+	}
 }
 
 async function buildSplitModeRadio(body: HTMLDivElement) {
@@ -308,11 +320,15 @@ async function buildSplitModeRadio(body: HTMLDivElement) {
 			child.removeAttribute("selected")
 		}
 	})
-	radio.addEventListener("command", e => {
+	const handleSplitModeCommand = (e: Event) => {
 		const mode = (e.target as XULElement).getAttribute("value") as string
 		setPref("split-mode", mode)
-	})
-	return async () => { }
+	}
+	radio.removeEventListener("command", handleSplitModeCommand)
+	radio.addEventListener("command", handleSplitModeCommand)
+	return () => {
+		radio.removeEventListener("command", handleSplitModeCommand)
+	}
 }
 
 async function buildColorFilter(body: HTMLDivElement) {
@@ -412,7 +428,7 @@ async function buildColorFilter(body: HTMLDivElement) {
 		await buildColorFilterItems()
 	}
 
-	return async () => {
+	return () => {
 		Zotero.Notifier.unregisterObserver(observerId)
 	}
 }
@@ -420,16 +436,20 @@ async function buildColorFilter(body: HTMLDivElement) {
 async function buildSyncButton(body: HTMLDivElement) {
 	const radio = body.querySelector('#' + getId("sync-mode"))! as XULElement
 	const button = body.querySelector('#' + getId("sync-button"))! as HTMLButtonElement
-	button.addEventListener("click", async () => {
+	const handleSyncClick = async () => {
 		const mode = SyncMode[radio.getAttribute("value")! as keyof typeof SyncMode]
 		notepads.getTarget()?.update(mode, await getText(body))
-	})
-	return async () => { }
+	}
+	ztoolkit.log("buildSyncButton")
+	button.addEventListener("click", handleSyncClick)
+	return () => {
+		button.removeEventListener("click", handleSyncClick)
+	}
 }
 
 async function buildExportButton(body: HTMLDivElement) {
 	const button = body.querySelector('#' + getId("export-button"))! as HTMLButtonElement
-	button.addEventListener("click", async () => {
+	const handleExportClick = async () => {
 		const res = (await new ztoolkit.FilePicker(
 			getString("tabpanel-export"),
 			"save",
@@ -441,8 +461,11 @@ async function buildExportButton(body: HTMLDivElement) {
 			const nsIFile = Zotero.File.pathToFile(res)
 			Zotero.File.putContents(nsIFile, text.join("\n"))
 		}
-	})
-	return async () => { }
+	}
+	button.addEventListener("click", handleExportClick)
+	return () => {
+		button.removeEventListener("click", handleExportClick)
+	}
 }
 
 enum SplitMode {
