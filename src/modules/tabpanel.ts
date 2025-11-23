@@ -440,7 +440,6 @@ async function buildSyncButton(body: HTMLDivElement) {
 		const mode = SyncMode[radio.getAttribute("value")! as keyof typeof SyncMode]
 		notepads.getTarget()?.update(mode, await getText(body))
 	}
-	ztoolkit.log("buildSyncButton")
 	button.addEventListener("click", handleSyncClick)
 	return () => {
 		button.removeEventListener("click", handleSyncClick)
