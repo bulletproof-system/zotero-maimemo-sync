@@ -80,30 +80,34 @@ export class Notepad {
 		}
 	}
 
-	async save() {
+	async save(): Promise<boolean> {
 		try {
 			this.inner = await updateNotepadApi(this.inner.id, this.inner as MaiMemo.Notepad);
+			return true;
 		} catch (e) {
-			log.error("error-notepads-save")
+			log.error("error-notepads-save");
+			return false;
 		}
 	}
 
 	async update(mode: UpdateMode, data: string[]) {
 		await this.load();
-		data.forEach(line => line.trim());
+		const cleanedData = data.map(line => line.trim()).filter(line => line !== "");
 		switch (mode) {
 			case UpdateMode.Append:
-				this.append(data);
+				this.append(cleanedData);
 				break;
 			case UpdateMode.Overwrite:
-				this.overwrite(data);
+				this.overwrite(cleanedData);
 				break;
 			default:
 				ztoolkit.log("Unknown update mode", mode);
 				return;
 		}
-		await this.save();
-		log.info("info-notepads-update")
+		const success = await this.save();
+		if (success) {
+			log.info("info-notepads-update");
+		}
 	}
 
 	/** 追加 */
