@@ -3,7 +3,7 @@ import { config } from "../../package.json";
 import { getNotepadsApi } from "../api";
 import { getLocaleID, getString } from "../utils/locale";
 import { notepads, UpdateMode as SyncMode } from "./notepads";
-import { TagElementProps } from "zotero-plugin-toolkit/dist/tools/ui";
+import type { TagElementProps } from "zotero-plugin-toolkit";
 import { listeners } from "process";
 import log from "./log";
 import { getPref, setPref } from "../utils/prefs";
@@ -502,7 +502,7 @@ async function getText(body: HTMLDivElement, item: Zotero.Item) {
 	const mode = SplitMode[radio.getAttribute("value")! as keyof typeof SplitMode]
 	const annotations = await getAnnotationsFromItem(item);
 	if (annotations.length === 0) return [];
-	
+
 	const selectedColors = annotations.filter((annoItem: Zotero.Item) => selector.getValue(annoItem.annotationColor));
 	const targetAnnotations = selectedColors.length > 0 ? selectedColors : annotations;
 
