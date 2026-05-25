@@ -85,6 +85,6 @@ export async function updateNotepadApi(id: string, notepad: UpdatedNotepadFields
 		}
 	)
 	if (xhr.status === 401) log.error(getString("error-token"))
-	if (xhr.status !== 201) throw new Error(xhr.statusText);
+	if (xhr.status !== 200 && xhr.status !== 201) throw new Error(xhr.statusText);
 	return JSON.parse(xhr.responseText).data.notepad;
 }

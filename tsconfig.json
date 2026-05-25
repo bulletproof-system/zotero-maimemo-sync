@@ -4,6 +4,8 @@
     "module": "commonjs",
     "target": "ES2016",
     "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
     "skipLibCheck": true,
     "strict": true
   },

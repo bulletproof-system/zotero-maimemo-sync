@@ -28,6 +28,7 @@
     "update-deps": "npm update --save"
   },
   "dependencies": {
+    "@swc/core-win32-x64-msvc": "^1.15.40",
     "vue": "^3.5.31",
     "zotero-plugin-toolkit": "^5.0.0"
   },

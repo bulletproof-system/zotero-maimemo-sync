@@ -8,7 +8,30 @@ import { listeners } from "process";
 import log from "./log";
 import { getPref, setPref } from "../utils/prefs";
 
-let destroy: Function[] = [];
+const destroyMap = new WeakMap<HTMLDivElement, Function[]>();
+
+async function getAnnotationsFromItem(item: Zotero.Item): Promise<Zotero.Item[]> {
+	if (!item) return [];
+	if (item.isAnnotation()) {
+		return [item];
+	}
+	if (item.isAttachment()) {
+		return item.getAnnotations();
+	}
+	if (item.isRegularItem()) {
+		const attachments = item.getAttachments();
+		const annotations: Zotero.Item[] = [];
+		for (const id of attachments) {
+			const attachment = Zotero.Items.get(id);
+			if (attachment && attachment.isAttachment()) {
+				annotations.push(...attachment.getAnnotations());
+			}
+		}
+		return annotations;
+	}
+	return [];
+}
+
 export async function registerTabpanel() {
 	const tabpanel = await (await fetch(`chrome://${config.addonRef}/content/tabpanel.xhtml`)).text()
 	Zotero.ItemPaneManager.registerSection({
@@ -23,21 +46,23 @@ export async function registerTabpanel() {
 			l10nID: getLocaleID("tabpanel-header"),
 		},
 		bodyXHTML: tabpanel,
-		onRender: async ({ body }) => {
+		onRender: async ({ body, item }) => {
 			ztoolkit.log("Register tabpanel scripts");
-			destroy.map(f => f());
-			destroy = await registerTabpanelScripts(body)
+			const oldDestroy = destroyMap.get(body);
+			if (oldDestroy) {
+				oldDestroy.forEach(f => f());
+			}
+			const newDestroy = await registerTabpanelScripts(body, item);
+			destroyMap.set(body, newDestroy);
 		},
 		onDestroy: async () => {
 			ztoolkit.log("Unregister tabpanel scripts");
-			destroy.map(f => f());
-			destroy = [];
 		}
 	})
 }
 
 
-export async function registerTabpanelScripts(body: HTMLDivElement) {
+export async function registerTabpanelScripts(body: HTMLDivElement, item: Zotero.Item) {
 	const res = []
 
 	res.push(await buildErrorlist(body));
@@ -45,9 +70,9 @@ export async function registerTabpanelScripts(body: HTMLDivElement) {
 	res.push(await buildRefreshButton(body));
 	res.push(await buildSyncModeRadio(body));
 	res.push(await buildSplitModeRadio(body));
-	res.push(await buildColorFilter(body));
-	res.push(await buildSyncButton(body));
-	res.push(await buildExportButton(body));
+	res.push(await buildColorFilter(body, item));
+	res.push(await buildSyncButton(body, item));
+	res.push(await buildExportButton(body, item));
 	return res;
 }
 
@@ -331,7 +356,7 @@ async function buildSplitModeRadio(body: HTMLDivElement) {
 	}
 }
 
-async function buildColorFilter(body: HTMLDivElement) {
+async function buildColorFilter(body: HTMLDivElement, item: Zotero.Item) {
 	const filter = body.querySelector('#' + getId("color-filter"))! as HTMLDivElement
 	const label = body.querySelector('#' + getId("color-filter-label"))! as HTMLElement
 	const selector = new ztoolkit.LargePrefObject(
@@ -339,10 +364,10 @@ async function buildColorFilter(body: HTMLDivElement) {
 		`${config.prefsPrefix}.color-filter-value`,
 	)
 	const colors = new Set<string>()
-	function calcColors(ids: string[] | number[]) {
+	function calcColors(items: Zotero.Item[]) {
 		colors.clear();
-		ids.forEach(id => {
-			const { annotationColor } = Zotero.Items.get(id)
+		items.forEach(annoItem => {
+			const { annotationColor } = annoItem
 			if (annotationColor) {
 				colors.add(annotationColor)
 				if (!selector.hasKey(annotationColor)) {
@@ -406,39 +431,36 @@ async function buildColorFilter(body: HTMLDivElement) {
 		})
 		filter.classList.toggle("all", count === 0)
 	}
+	const annotations = await getAnnotationsFromItem(item);
+	calcColors(annotations);
+	await buildColorFilterItems();
+
 	const observerId = Zotero.Notifier.registerObserver({
 		notify: async (event, type, ids, extraData) => {
 			if (["add", "modify", "delete"].includes(event) && type === "item") {
-				const reader = await ztoolkit.Reader.getReader();
-				if (!reader) return;
-				calcColors(reader.annotationItemIDs)
-			} else if (event == 'select' && type == 'tab') {
-				const reader = await ztoolkit.Reader.getReader();
-				if (!reader) return;
-				calcColors(reader.annotationItemIDs)
-			} else {
-				return;
+				const currentAnnotations = await getAnnotationsFromItem(item);
+				calcColors(currentAnnotations)
+				await buildColorFilterItems()
 			}
-			await buildColorFilterItems()
 		}
-	}, ["item", "tab"], getId("color-filter"))
-	const reader = await ztoolkit.Reader.getReader();
-	if (reader) {
-		calcColors(reader.annotationItemIDs)
-		await buildColorFilterItems()
-	}
+	}, ["item"], getId("color-filter"))
 
 	return () => {
 		Zotero.Notifier.unregisterObserver(observerId)
 	}
 }
 
-async function buildSyncButton(body: HTMLDivElement) {
+async function buildSyncButton(body: HTMLDivElement, item: Zotero.Item) {
 	const radio = body.querySelector('#' + getId("sync-mode"))! as XULElement
 	const button = body.querySelector('#' + getId("sync-button"))! as HTMLButtonElement
 	const handleSyncClick = async () => {
 		const mode = SyncMode[radio.getAttribute("value")! as keyof typeof SyncMode]
-		notepads.getTarget()?.update(mode, await getText(body))
+		const text = await getText(body, item)
+		if (text.length === 0) {
+			ztoolkit.log("No annotations found to sync.");
+			return;
+		}
+		notepads.getTarget()?.update(mode, text)
 	}
 	button.addEventListener("click", handleSyncClick)
 	return () => {
@@ -446,7 +468,7 @@ async function buildSyncButton(body: HTMLDivElement) {
 	}
 }
 
-async function buildExportButton(body: HTMLDivElement) {
+async function buildExportButton(body: HTMLDivElement, item: Zotero.Item) {
 	const button = body.querySelector('#' + getId("export-button"))! as HTMLButtonElement
 	const handleExportClick = async () => {
 		const res = (await new ztoolkit.FilePicker(
@@ -456,7 +478,7 @@ async function buildExportButton(body: HTMLDivElement) {
 			"notepad.txt",
 		).open())
 		if (res !== false) {
-			const text = await getText(body)
+			const text = await getText(body, item)
 			const nsIFile = Zotero.File.pathToFile(res)
 			Zotero.File.putContents(nsIFile, text.join("\n"))
 		}
@@ -471,36 +493,34 @@ enum SplitMode {
 	Annotation = "Annotation",
 	Word = "Word",
 }
-async function getText(body: HTMLDivElement) {
+async function getText(body: HTMLDivElement, item: Zotero.Item) {
 	const radio = body.querySelector('#' + getId("split-mode"))! as XULElement
 	const selector = new ztoolkit.LargePrefObject(
 		`${config.prefsPrefix}.color-filter-key`,
 		`${config.prefsPrefix}.color-filter-value`,
 	)
 	const mode = SplitMode[radio.getAttribute("value")! as keyof typeof SplitMode]
-	const reader = await ztoolkit.Reader.getReader()
-	if (!reader) return [];
-	const annotationTexts = reader.annotationItemIDs.map((id: number) => Zotero.Items.get(id))
-		.filter((item: Zotero.Item) => selector.getValue(item.annotationColor))
-		.map((item: Zotero.Item) => item.annotationText)
-	// 没有过滤时选择所有注释
-	if (annotationTexts.length == 0) {
-		reader.annotationItemIDs.map((id: number) => Zotero.Items.get(id))
-			.forEach((item: Zotero.Item) => annotationTexts.push(item.annotationText))
-	}
+	const annotations = await getAnnotationsFromItem(item);
+	if (annotations.length === 0) return [];
+	
+	const selectedColors = annotations.filter((annoItem: Zotero.Item) => selector.getValue(annoItem.annotationColor));
+	const targetAnnotations = selectedColors.length > 0 ? selectedColors : annotations;
+
 	const text: string[] = []
-	annotationTexts.forEach((annotation) => {
+	targetAnnotations.forEach((annoItem) => {
+		const annotationText = annoItem.annotationText || "";
+		if (!annotationText) return;
 		switch (mode) {
 			case SplitMode.Annotation:
-				text.push(annotation);
+				text.push(annotationText);
 				break;
 			case SplitMode.Word:
-				text.push(...annotation.split(" "));
+				text.push(...annotationText.split(/\s+/).map(w => w.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"'’]/g, "").trim()).filter(w => w.length > 0));
 				break;
 			default:
 				ztoolkit.log("Unknown split mode: " + mode);
 				return [];
 		}
-	}, []);
+	});
 	return text;
 }
