@@ -13,6 +13,10 @@ interface CustomResponse<T = any> {
 	success: boolean;
 }
 
+interface NotepadsResponse {
+	notepads?: MaiMemo.BriefNotepad[] | null;
+}
+
 export function getNotepadsApi(): Promise<MaiMemo.BriefNotepad[]>;
 export function getNotepadsApi(limit: number, offset: number): Promise<MaiMemo.BriefNotepad[]>;
 export async function getNotepadsApi(limit?: number, offset?: number) {
@@ -30,15 +34,16 @@ export async function getNotepadsApi(limit?: number, offset?: number) {
 		// ztoolkit.log(xhr)
 		if (xhr.status === 401) log.error("error-token")
 		if (xhr.status !== 200) throw new Error(xhr.statusText);
-		return JSON.parse(xhr.responseText).data.notepads;
+		const response = JSON.parse(xhr.responseText) as CustomResponse<NotepadsResponse>;
+		return Array.isArray(response.data?.notepads) ? response.data.notepads : [];
 	} else {
 		limit = 10, offset = 0;
 		let notepads: MaiMemo.BriefNotepad[] = [];
 		while (true) {
 			const res = await getNotepadsApi(limit, offset);
 			notepads = notepads.concat(res);
-			if (res.length !== 10) break;
-			offset += 10;
+			if (res.length < limit) break;
+			offset += limit;
 		}
 		return notepads;
 	}

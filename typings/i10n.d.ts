@@ -12,6 +12,7 @@ export type FluentMessageId =
   | 'menuitem-label'
   | 'menuitem-submenulabel'
   | 'menupopup-label'
+  | 'notepad-select-placeholder'
   | 'pref-about'
   | 'pref-help'
   | 'pref-service'
