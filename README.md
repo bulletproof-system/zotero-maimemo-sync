@@ -1,7 +1,14 @@
 # Zotero 注释同步插件
 
-[![zotero target version](https://img.shields.io/badge/Zotero-7-green?style=flat-square&logo=zotero&logoColor=CC2936)](https://www.zotero.org)
+[![zotero target version](https://img.shields.io/badge/Zotero-7-red?style=flat-square&logo=zotero&logoColor=CC2936)](https://www.zotero.org)
+[![zotero target version](https://img.shields.io/badge/Zotero-8-orange?style=flat-square&logo=zotero&logoColor=CC2936)](https://www.zotero.org/support/beta_builds)
+[![zotero target version](https://img.shields.io/badge/Zotero-9-yellow?style=flat-square&logo=zotero&logoColor=CC2936)](https://www.zotero.org/support/beta_builds)
+[![zotero target version](https://img.shields.io/badge/Zotero-10-green?style=flat-square&logo=zotero&logoColor=CC2936)](https://www.zotero.org/support/beta_builds)
+
 [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template)
+![Downloads release](https://img.shields.io/github/downloads/bulletproof-system/zotero-maimemo-sync/total?color=yellow)
+[![License](https://img.shields.io/github/license/bulletproof-system/zotero-maimemo-sync?color=blue)](https://github.com/bulletproof-system/zotero-maimemo-sync/blob/main/LICENSE)
+
 
 此插件用于将 Zotero 中的注释同步到墨墨背单词的云词本中。
 
