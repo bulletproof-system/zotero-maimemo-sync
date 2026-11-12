@@ -8,6 +8,7 @@
 [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template)
 ![Downloads release](https://img.shields.io/github/downloads/bulletproof-system/zotero-maimemo-sync/total?color=yellow)
 [![License](https://img.shields.io/github/license/bulletproof-system/zotero-maimemo-sync?color=blue)](https://github.com/bulletproof-system/zotero-maimemo-sync/blob/main/LICENSE)
+[![Zotero Plugins grade](https://zoteroplugins.org/badge/zotero-maimemo-sync.svg)](https://zoteroplugins.org/p/zotero-maimemo-sync)
 
 
 此插件用于将 Zotero 中的注释同步到墨墨背单词的云词本中。
