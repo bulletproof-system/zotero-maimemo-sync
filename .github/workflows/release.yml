@@ -24,10 +24,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
+
+      - name: Setup npm
+        run: npm install --global npm@11.18.0
 
       - name: Install deps
-        run: npm install -f
+        run: npm ci
 
       - name: Build
         run: |
