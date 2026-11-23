@@ -31,7 +31,7 @@
     "update-deps": "npm update --save"
   },
   "dependencies": {
-    "vue": "^3.5.43",
+    "vue": "^3.5.46",
     "zotero-plugin-toolkit": "^6.0.0"
   },
   "devDependencies": {
